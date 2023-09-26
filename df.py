@@ -1,8 +1,12 @@
 import numpy as np
+import pyarrow as pa
+import pyarrow.parquet as pq
 import csv
 
 class DataFrame():
-    def __init__(self, data):
+    def __init__(self, data=None, arrow_table=None):
+        if arrow_table is not None:
+            data = {col: arrow_table.column(col).to_pylist() for col in arrow_table.schema.names}
         self.data = data
         self.columns = list(self.data.keys())
         self.index = list(range(len(self.data[self.columns[0]])))
@@ -171,3 +175,24 @@ class DataFrame():
                             pass  # keep value as string
                     data[headers[i]].append(value)
         return cls(data)
+
+    # Arrow methods
+    def to_arrow_table(self):
+        arrays = [pa.array(self.data[col]) for col in self.columns]
+        arrow_table = pa.Table.from_arrays(arrays, names=self.columns)
+        return arrow_table
+    
+    @classmethod
+    def from_arrow_table(cls, arrow_table):
+        data = {col: arrow_table.column(col).to_pylist() for col in arrow_table.schema.names}
+        return cls(data)
+
+    
+    def to_parquet(self, file_path):
+        arrow_table = self.to_arrow_table()
+        pq.write_table(arrow_table, file_path)
+
+    @classmethod
+    def from_parquet(cls, file_path):
+        arrow_table = pq.read_table(file_path)
+        return cls.from_arrow_table(arrow_table)

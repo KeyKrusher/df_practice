@@ -2,6 +2,7 @@ import unittest
 from df import DataFrame
 import numpy as np
 import os
+import pyarrow as pa
 
 class TestDataFrame(unittest.TestCase):
     def setUp(self):
@@ -113,7 +114,6 @@ class TestDataFrame(unittest.TestCase):
         expected_data = {'x': [1], 'y': [2], 'z': [0]}
         self.assertEqual(dropped_df.data, expected_data)
 
-
     def test_fillna(self):
         df_with_na = DataFrame(data={'x': [1, 3, None, 7],
                                      'y': [2, None, 6, 8],
@@ -121,6 +121,32 @@ class TestDataFrame(unittest.TestCase):
         filled_df = df_with_na.fillna(0)
         expected_data = {'x': [1, 3, 0, 7], 'y': [2, 0, 6, 8], 'z': [0, 0, 5, 0]}
         self.assertEqual(filled_df.data, expected_data)
+
+    # Test new arror functionality
+    def test_to_arrow_table(self):
+        arrow_table = self.df.to_arrow_table()
+        self.assertIsInstance(arrow_table, pa.Table)
+        self.assertEqual(arrow_table.schema.names, self.df.columns)
+        for col_name in self.df.columns:
+            self.assertTrue((arrow_table.column(col_name).to_pandas() == self.df.data[col_name]).all())
+
+    def test_from_arrow_table(self):
+        arrow_table = self.df.to_arrow_table()
+        df_from_arrow = DataFrame.from_arrow_table(arrow_table)
+        self.assertEqual(df_from_arrow.data, self.df.data)
+
+    def test_to_parquet(self):
+        parquet_file = 'test.parquet'
+        self.df.to_parquet(parquet_file)
+        self.assertTrue(os.path.exists(parquet_file))
+        os.remove(parquet_file)  # Clean up the parquet file
+
+    def test_from_parquet(self):
+        parquet_file = 'test.parquet'
+        self.df.to_parquet(parquet_file)
+        df_from_parquet = DataFrame.from_parquet(parquet_file)
+        self.assertEqual(df_from_parquet.data, self.df.data)
+        os.remove(parquet_file)  # Clean up the parquet file
 
 if __name__ == '__main__':
     unittest.main()
