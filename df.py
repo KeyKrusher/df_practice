@@ -2,6 +2,7 @@
 implement to_csv and from_csv
 '''
 import numpy as np
+import csv
 
 class DataFrame():
     def __init__(self, data):
@@ -128,3 +129,34 @@ class DataFrame():
             for col, values in self.data.items():
                 new_data[col] = [func(value) for value in values]
         return DataFrame(new_data)
+
+    def to_csv(self, file_path):
+        with open(file_path, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            # Write the header row
+            writer.writerow(self.columns)
+            # Write the data rows
+            for i in self.index:
+                row = [self.data[col][i] for col in self.columns]
+                writer.writerow(row)
+
+    # Use classmethod decorator to update class state
+    @classmethod
+    def from_csv(cls, filename):
+        data = {}
+        with open(filename, 'r') as file:
+            reader = csv.reader(file)
+            headers = next(reader)
+            for header in headers:
+                data[header] = []
+            for row in reader:
+                for i, value in enumerate(row):
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        try:
+                            value = float(value)
+                        except ValueError:
+                            pass  # keep value as string
+                    data[headers[i]].append(value)
+        return cls(data)

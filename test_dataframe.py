@@ -1,12 +1,19 @@
 import unittest
 from df import DataFrame
 import numpy as np
+import os
 
 class TestDataFrame(unittest.TestCase):
     def setUp(self):
         self.df = DataFrame(data={'x': [1, 3, 5, 7],
                                   'y': [2, 4, 6, 8],
                                   'z': [0, 0, 5, 6]})
+        self.filename = 'test.csv'
+
+    def tearDown(self):
+        # Remove the test CSV file if it exists
+        if os.path.exists(self.filename):
+            os.remove(self.filename)
 
     def test_shape(self):
         self.assertEqual(self.df.shape(), (4, 3))
@@ -75,6 +82,20 @@ class TestDataFrame(unittest.TestCase):
         # Test applying a lambda function to a specific column
         new_df_lambda = self.df.apply(lambda x: x * 2, column='y')
         self.assertEqual(new_df_lambda.data['y'], [4, 8, 12, 16])  # Check that values in column 'y' have been doubled
+
+    def test_to_csv(self):
+        self.df.to_csv(self.filename)
+        self.assertTrue(os.path.exists(self.filename))
+        with open(self.filename, 'r') as file:
+            content = file.read()
+        expected_content = 'x,y,z\n1,2,0\n3,4,0\n5,6,5\n7,8,6\n'
+        self.assertEqual(content, expected_content)
+
+    def test_from_csv(self):
+        with open(self.filename, 'w') as file:
+            file.write('x,y,z\n1,2,0\n3,4,0\n5,6,5\n7,8,6\n')
+        df_from_csv = DataFrame.from_csv(self.filename)
+        self.assertEqual(df_from_csv.data, self.df.data)
 
 if __name__ == '__main__':
     unittest.main()
