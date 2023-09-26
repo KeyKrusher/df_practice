@@ -1,6 +1,3 @@
-'''
-implement to_csv and from_csv
-'''
 import numpy as np
 import csv
 
