@@ -94,6 +94,17 @@ class DataFrame():
             new_df[column] = set(self.data[column])
         return DataFrame(new_df)
     
+    def dropna(self):
+        valid_indices = set(self.index)
+        for col, values in self.data.items():
+            valid_indices &= {i for i, value in enumerate(values) if value is not None}
+        new_data = {col: [value for i, value in enumerate(values) if i in valid_indices] for col, values in self.data.items()}
+        return DataFrame(new_data)
+
+    def fillna(self, value):
+        new_data = {col: [val if val is not None else value for val in values] for col, values in self.data.items()}
+        return DataFrame(new_data)
+
     def describe(self, column=''):
         description_df = {}
         if column == '':

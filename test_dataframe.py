@@ -104,6 +104,23 @@ class TestDataFrame(unittest.TestCase):
             file.write('x,y,z\n1,2,0\n3,4,0\n5,6,5\n7,8,6\n')
         df_from_csv = DataFrame.from_csv(self.filename)
         self.assertEqual(df_from_csv.data, self.df.data)
+    
+    def test_dropna(self):
+        df_with_na = DataFrame(data={'x': [1, 3, None, 7],
+                                    'y': [2, None, 6, 8],
+                                    'z': [0, 0, 5, None]})
+        dropped_df = df_with_na.dropna()
+        expected_data = {'x': [1], 'y': [2], 'z': [0]}
+        self.assertEqual(dropped_df.data, expected_data)
+
+
+    def test_fillna(self):
+        df_with_na = DataFrame(data={'x': [1, 3, None, 7],
+                                     'y': [2, None, 6, 8],
+                                     'z': [0, 0, 5, None]})
+        filled_df = df_with_na.fillna(0)
+        expected_data = {'x': [1, 3, 0, 7], 'y': [2, 0, 6, 8], 'z': [0, 0, 5, 0]}
+        self.assertEqual(filled_df.data, expected_data)
 
 if __name__ == '__main__':
     unittest.main()
