@@ -45,6 +45,9 @@ class DataFrame():
     def shape(self):
         return (len(self.index), len(self.columns))
     
+    def copy(self):
+        return DataFrame(self.data.copy())
+    
     def agg(self, type):
         df_dict = {}
         if type == 'sum':
