@@ -28,8 +28,16 @@ class TestDataFrame(unittest.TestCase):
         self.assertEqual(agg_df.data['y'][0], 20)
 
     def test_filter(self):
-        filtered_df = self.df.filter('x', '>', 3)
-        self.assertEqual(len(filtered_df.index), 2)
+        # Define the condition function
+        def is_greater_than_3(value):
+            return value > 3
+
+        # Apply the filter
+        filtered_df = self.df.filter('x', is_greater_than_3)
+
+        # Verify the result
+        expected_data = {'x': [5, 7], 'y': [6, 8], 'z': [5, 6]}
+        self.assertEqual(filtered_df.data, expected_data)
 
     def test_sort_values(self):
         sorted_df = self.df.sort_values('x', ascending=False)

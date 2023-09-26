@@ -61,13 +61,13 @@ class DataFrame():
         
         return DataFrame(df_dict)
     
-    def filter(self, column, condition, value):
+    def filter(self, column, condition_func):
         if column not in self.columns:
             raise ValueError(f"Column '{column}' not found.")
 
         filtered_data = {col: [] for col in self.columns}
         for i in range(len(self.data[column])):
-            if eval(f'{self.data[column][i]} {condition} {value}'):
+            if condition_func(self.data[column][i]):
                 for col in self.columns:
                     filtered_data[col].append(self.data[col][i])
 
